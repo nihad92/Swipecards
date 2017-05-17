@@ -8,8 +8,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
 
 /**
@@ -49,7 +47,6 @@ public class FlingCardListener implements View.OnTouchListener {
     private final int TOUCH_ABOVE = 0;
     private final int TOUCH_BELOW = 1;
     private int touchPosition;
-    private final Object obj = new Object();
     private boolean isAnimationRunning = false;
     private float MAX_COS = (float) Math.cos(Math.toRadians(45));
 
@@ -78,7 +75,8 @@ public class FlingCardListener implements View.OnTouchListener {
                     // from http://android-developers.blogspot.com/2010/06/making-sense-of-multitouch.html
                     // Save the ID of this pointer
 
-                    mActivePointerId = event.getPointerId(0);
+                    int pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+                    mActivePointerId = event.getPointerId(pointerIndex);
                     float x = 0;
                     float y = 0;
                     boolean success = false;
@@ -123,7 +121,7 @@ public class FlingCardListener implements View.OnTouchListener {
 
                 case MotionEvent.ACTION_POINTER_UP:
                     // Extract the index of the pointer that left the touch sensor
-                    final int pointerIndex =
+                    pointerIndex =
                         (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
                     final int pointerId = event.getPointerId(pointerIndex);
                     if (pointerId == mActivePointerId) {
@@ -137,6 +135,10 @@ public class FlingCardListener implements View.OnTouchListener {
 
                     // Find the index of the active pointer and fetch its position
                     final int pointerIndexMove = event.findPointerIndex(mActivePointerId);
+                    if(pointerIndexMove == -1) {
+                        mActivePointerId = INVALID_POINTER_ID;
+                        break;
+                    }
                     final float xMove = event.getX(pointerIndexMove);
                     final float yMove = event.getY(pointerIndexMove);
 

@@ -42,7 +42,7 @@ public class CustomAdapter extends BaseAdapter {
   }
 
   @Override public int getItemViewType(int position) {
-    return Integer.valueOf((String)getItem(position)).intValue() % 2 * 0;
+    return Integer.valueOf((String)getItem(position)).intValue() % 2;
   }
 
   public void add(String text) {

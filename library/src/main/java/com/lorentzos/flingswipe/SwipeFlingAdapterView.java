@@ -7,8 +7,10 @@ import android.database.DataSetObserver;
 import android.graphics.PointF;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.FrameLayout;
@@ -101,44 +103,58 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
 
   @Override protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
     super.onLayout(changed, left, top, right, bottom);
-    // if we don't have an adapter, we don't need to do anything
+    refreshView();
+  }
+
+  public void refreshView() {
     if (mAdapter == null) {
       return;
     }
 
     mInLayout = true;
-    final int adapterCount = mAdapter.getCount();
+    int adapterCount = mAdapter.getCount();
 
     if (adapterCount != 0) {
-      if (visibleCards.isEmpty()) {
+      if (visibleCards.isEmpty() && cachedViews.size() == 0) {
         layoutChildren(0, adapterCount);
-      }  else if (visibleCards.size() != MAX_VISIBLE && adapterCount >= MAX_VISIBLE) {
-        View cachedView = getCachedView(MAX_VISIBLE - 1);
-        View newUnderChild = mAdapter.getView(MAX_VISIBLE - 1, cachedView, this);
-
-        if (cachedView == newUnderChild) {
-          newUnderChild.animate().setListener(null);
-          newUnderChild.setOnTouchListener(null);
-        } else {
-          makeAndAddView(newUnderChild);
+      } else if (visibleCards.size() != MAX_VISIBLE && adapterCount >= MAX_VISIBLE) {
+        for (int i = visibleCards.size(); i < Math.min(adapterCount, MAX_VISIBLE); i++) {
+          createOrRecycleViews(i);
         }
-
-        visibleCards.add(newUnderChild);
-
-        LinkedList<View> visibleCardsLinkedList = (LinkedList<View>) visibleCards;
-        for (int i = visibleCards.size() - 1; i >= 0; i--) {
-          visibleCardsLinkedList.get(i).bringToFront();
-        }
-        newUnderChild.setTranslationY(0);
-        newUnderChild.setTranslationX(0);
-        newUnderChild.setVisibility(VISIBLE);
       }
+    } else {
+      cachedViews.clear();
+      visibleCards.clear();
+      removeAllViewsInLayout();
+      mActiveCard = null;
     }
 
     setTopView();
     mInLayout = false;
 
     if (adapterCount <= MIN_ADAPTER_STACK) mFlingListener.onAdapterAboutToEmpty(adapterCount);
+  }
+
+  private void createOrRecycleViews(int index) {
+    View cachedView = getCachedView(index);
+    View newUnderChild = mAdapter.getView(index, cachedView, this);
+
+    if (cachedView == newUnderChild) {
+      newUnderChild.animate().setListener(null);
+      newUnderChild.setOnTouchListener(null);
+    } else {
+      makeAndAddView(newUnderChild);
+    }
+
+    visibleCards.add(newUnderChild);
+
+    LinkedList<View> visibleCardsLinkedList = (LinkedList<View>) visibleCards;
+    for (int i = visibleCards.size() - 1; i >= 0; i--) {
+      visibleCardsLinkedList.get(i).bringToFront();
+    }
+    newUnderChild.setTranslationY(0);
+    newUnderChild.setTranslationX(0);
+    newUnderChild.setVisibility(VISIBLE);
   }
 
   private void layoutChildren(int startingIndex, int adapterCount) {

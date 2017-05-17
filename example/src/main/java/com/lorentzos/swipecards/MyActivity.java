@@ -16,6 +16,7 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import java.util.Arrays;
+import java.util.LinkedList;
 
 public class MyActivity extends Activity {
 
@@ -59,9 +60,12 @@ public class MyActivity extends Activity {
             @Override
             public void onAdapterAboutToEmpty(int itemsInAdapter) {
                 // Ask for more data here
-                customAdapter.add((String.valueOf(i)));
-                Log.d("LIST", "notified");
-                i++;
+                if(itemsInAdapter == 2) {
+                    customAdapter.items.clear();
+                    customAdapter.notifyDataSetChanged();
+                    customAdapter.items.addAll(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9"));
+                    customAdapter.notifyDataSetChanged();
+                }
             }
 
             @Override
