@@ -15,13 +15,12 @@ import java.util.ArrayList;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
-
+import java.util.Arrays;
 
 public class MyActivity extends Activity {
 
-    private ArrayList<String> al;
-    private ArrayAdapter<String> arrayAdapter;
-    private int i;
+    CustomAdapter customAdapter = new CustomAdapter();
+    private int i = 10;
 
     @InjectView(R.id.frame) SwipeFlingAdapterView flingContainer;
 
@@ -32,28 +31,16 @@ public class MyActivity extends Activity {
         setContentView(R.layout.activity_my);
         ButterKnife.inject(this);
 
-
-        al = new ArrayList<>();
-        al.add("php");
-        al.add("c");
-        al.add("python");
-        al.add("java");
-        al.add("html");
-        al.add("c++");
-        al.add("css");
-        al.add("javascript");
-
-        arrayAdapter = new ArrayAdapter<>(this, R.layout.item, R.id.helloText, al );
+        customAdapter.add(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9"));
 
 
-        flingContainer.setAdapter(arrayAdapter);
+        flingContainer.setAdapter(customAdapter);
         flingContainer.setFlingListener(new SwipeFlingAdapterView.onFlingListener() {
             @Override
             public void removeFirstObjectInAdapter() {
                 // this is the simplest way to delete an object from the Adapter (/AdapterView)
                 Log.d("LIST", "removed object!");
-                al.remove(0);
-                arrayAdapter.notifyDataSetChanged();
+                customAdapter.remove(0);
             }
 
             @Override
@@ -72,8 +59,7 @@ public class MyActivity extends Activity {
             @Override
             public void onAdapterAboutToEmpty(int itemsInAdapter) {
                 // Ask for more data here
-                al.add("XML ".concat(String.valueOf(i)));
-                arrayAdapter.notifyDataSetChanged();
+                customAdapter.add((String.valueOf(i)));
                 Log.d("LIST", "notified");
                 i++;
             }

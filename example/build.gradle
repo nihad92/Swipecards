@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion Integer.parseInt(project.TARGET_SDK_VERSION)
-    buildToolsVersion "22.0.1"
+    buildToolsVersion "25"
 
     defaultConfig {
         applicationId "com.lorentzos.swipecards.example"
@@ -23,4 +23,5 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(':library')
     compile 'com.jakewharton:butterknife:5.1.2'
+    compile 'com.facebook.stetho:stetho:1.5.0'
 }
