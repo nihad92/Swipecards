@@ -1,6 +1,9 @@
 apply plugin: 'com.android.library'
 apply plugin: 'maven'
 apply plugin: 'signing'
+apply plugin: 'com.github.dcendents.android-maven'
+
+group='com.github.nihad92'
 
 android {
     compileSdkVersion Integer.parseInt(project.TARGET_SDK_VERSION)
@@ -27,6 +30,7 @@ dependencies {
 
 
 
+/*
 signing {
     required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
     sign configurations.archives
@@ -76,4 +80,4 @@ uploadArchives {
             }
         }
     }
-}
+}*/
