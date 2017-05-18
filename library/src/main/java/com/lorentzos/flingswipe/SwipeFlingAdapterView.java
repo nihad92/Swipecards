@@ -7,22 +7,15 @@ import android.database.DataSetObserver;
 import android.graphics.PointF;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.FrameLayout;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  * Created by dionysis_lorentzos on 5/8/14
@@ -33,6 +26,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class SwipeFlingAdapterView extends BaseFlingAdapterView {
 
+  private int MINIMUM_VISIBLE_CARD = 3;
   private int MAX_VISIBLE = 4;
   private int MIN_ADAPTER_STACK = 6;
   private float ROTATION_DEGREES = 15.f;
@@ -62,7 +56,7 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
 
     TypedArray a =
         context.obtainStyledAttributes(attrs, R.styleable.SwipeFlingAdapterView, defStyle, 0);
-    MAX_VISIBLE = a.getInt(R.styleable.SwipeFlingAdapterView_max_visible, MAX_VISIBLE);
+    MAX_VISIBLE = Math.max(a.getInt(R.styleable.SwipeFlingAdapterView_max_visible, MAX_VISIBLE), MINIMUM_VISIBLE_CARD);
     MIN_ADAPTER_STACK =
         a.getInt(R.styleable.SwipeFlingAdapterView_min_adapter_stack, MIN_ADAPTER_STACK);
     ROTATION_DEGREES =
@@ -97,6 +91,13 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
 
   @Override public void requestLayout() {
     if (!mInLayout) {
+      if(getAdapter() != null && getAdapter().getCount() != 0 && visibleCards.size() == 0) {
+        measure(
+            View.MeasureSpec.makeMeasureSpec(getMeasuredWidth(), View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(getMeasuredHeight(), View.MeasureSpec.EXACTLY));
+        layout(getLeft(), getTop(), getRight(), getBottom());
+
+      }
       super.requestLayout();
     }
   }
@@ -123,13 +124,16 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
         }
       }
     } else {
-      cachedViews.clear();
-      visibleCards.clear();
-      removeAllViewsInLayout();
-      mActiveCard = null;
+      clearAdapterView();
     }
 
     setTopView();
+
+    //Refresh view
+    LinkedList<View> visibleCardsLinkedList = (LinkedList<View>) visibleCards;
+    for (int i = 0; i < visibleCards.size(); i++) {
+      getAdapter().getView(i, visibleCardsLinkedList.get(i), this);
+    }
     mInLayout = false;
 
     if (adapterCount <= MIN_ADAPTER_STACK) mFlingListener.onAdapterAboutToEmpty(adapterCount);
@@ -139,22 +143,31 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
     View cachedView = getCachedView(index);
     View newUnderChild = mAdapter.getView(index, cachedView, this);
 
-    if (cachedView == newUnderChild) {
+    if (cachedView != newUnderChild)  {
+      makeAndAddView(newUnderChild);
+    } else {
       newUnderChild.animate().setListener(null);
       newUnderChild.setOnTouchListener(null);
-    } else {
-      makeAndAddView(newUnderChild);
     }
 
-    visibleCards.add(newUnderChild);
+    setTopView();
 
+    visibleCards.add(newUnderChild);
     LinkedList<View> visibleCardsLinkedList = (LinkedList<View>) visibleCards;
     for (int i = visibleCards.size() - 1; i >= 0; i--) {
       visibleCardsLinkedList.get(i).bringToFront();
     }
+
     newUnderChild.setTranslationY(0);
     newUnderChild.setTranslationX(0);
     newUnderChild.setVisibility(VISIBLE);
+  }
+
+  private void clearAdapterView() {
+    cachedViews.clear();
+    visibleCards.clear();
+    removeAllViewsInLayout();
+    mActiveCard = null;
   }
 
   private void layoutChildren(int startingIndex, int adapterCount) {

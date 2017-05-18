@@ -201,13 +201,13 @@ public class FlingCardListener implements View.OnTouchListener {
             aDownTouchX = 0;
             aDownTouchY = 0;
             frame.animate()
-                    .setDuration(animation_duration)
+                    .setDuration(150)
                     .setInterpolator(new OvershootInterpolator())
                     .x(objectX)
                     .y(objectY)
                     .rotation(0);
             mFlingListener.onScroll(0.0f);
-            if (abslMoveDistance < 6.0) {
+            if (abslMoveDistance < 30.0) {
                 mFlingListener.onClick(dataObject);
             }
         }

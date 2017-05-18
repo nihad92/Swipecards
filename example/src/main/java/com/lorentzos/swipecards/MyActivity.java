@@ -60,10 +60,8 @@ public class MyActivity extends Activity {
             @Override
             public void onAdapterAboutToEmpty(int itemsInAdapter) {
                 // Ask for more data here
-                if(itemsInAdapter == 2) {
-                    customAdapter.items.clear();
-                    customAdapter.notifyDataSetChanged();
-                    customAdapter.items.addAll(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9"));
+                if(itemsInAdapter == 0) {
+                    customAdapter.items = new LinkedList<String>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9"));
                     customAdapter.notifyDataSetChanged();
                 }
             }
